@@ -16,6 +16,8 @@ import (
 
 	// hertz-swagger middleware
 	// swagger embed files
+	"github.com/mvrilo/go-redoc"
+	ginredoc "github.com/mvrilo/go-redoc/gin"
 	swaggerFiles "github.com/swaggo/files"
 	swagger "github.com/swaggo/gin-swagger"
 )
@@ -39,9 +41,9 @@ func init() {
 	infrastructure.NewLocalizer()
 }
 
-// @title Sisalak
+// @title FDC
 // @version 1.0
-// @description This is a Sisalak Api Documentation.
+// @description This is a FDC Api Documentation.
 
 // @contact.name hertz-contrib
 // @contact.url https://github.com/hertz-contrib
@@ -49,19 +51,24 @@ func init() {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @schemes https http
-
-// @securityDefinitions.apikey ApiKeyAuth
+// @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-// @description Bearer access token here
+// @description Type "Bearer" followed by a space and JWT token.
 func main() {
 	// create instance
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 
 	// swagger
-	app.GET("/docs/*any", swagger.WrapHandler(swaggerFiles.Handler))
+	app.GET("/explore/*any", swagger.WrapHandler(swaggerFiles.Handler))
+	app.Use(ginredoc.New(redoc.Redoc{
+		Title:       "FDC",
+		Description: "FDC API Description",
+		SpecFile:    "./docs/swagger.json",
+		SpecPath:    "/explore/doc.json",
+		DocsPath:    "/docs",
+	}))
 
 	// middleware
 	app.Use(gin.Recovery())
@@ -79,7 +86,6 @@ func main() {
 	routers.Index()
 	routers.Authentication()
 	routers.Example()
-	routers.Perangkat()
 	routers.Object()
 	routers.Export()
 

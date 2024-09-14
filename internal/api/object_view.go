@@ -15,7 +15,8 @@ import (
 // @Param       id	path	string	true	"id"
 // @Param       name	path	string	true	"fill with random"
 // @Router      /object/{id}/{name} [get]
-// @Security ApiKeyAuth
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
 func (m *ServiceServer) ObjectView(c *gin.Context) {
 	ctx := context.Background()
 	id := c.Param("id")

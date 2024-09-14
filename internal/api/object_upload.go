@@ -12,8 +12,9 @@ import (
 // @Summary     Upload
 // @Tags        Object
 // @Param   	file  formData     file     true  "File"
-// @Router		/object/ [post]
-// @Security ApiKeyAuth
+// @Router		/object [post]
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
 func (m *ServiceServer) ObjectUpload(c *gin.Context) {
 	ctx := context.Background()
 	user := util.CurrentUser(c)

@@ -15,7 +15,9 @@ import (
 // @Accept		json
 // @Produce		json
 // @Param       body	body  dto.AuthRefresh	true  "body"
-// @Router		/auth/refresh/ [post]
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
+// @Router		/auth/refresh [post]
 func (m *ServiceServer) AuthRefresh(c *gin.Context) {
 	ctx := context.Background()
 	payload := new(dto.AuthRefresh)
@@ -30,7 +32,7 @@ func (m *ServiceServer) AuthRefresh(c *gin.Context) {
 		util.NewResponse(c).Error(errors, infrastructure.Localize("FAILED_VALIDATION"), 400)
 		return
 	}
-	token, err := m.authService.Refresh(&ctx, &entity.ServAuthRefresh{
+	token, err := m.authService.Refresh(&ctx, &entity.AuthRefresh{
 		Token: &payload.Token,
 	})
 	if err.Errors != nil {

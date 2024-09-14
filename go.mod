@@ -18,6 +18,8 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/lib/pq v1.10.9
+	github.com/mvrilo/go-redoc v0.1.5
+	github.com/mvrilo/go-redoc/gin v0.0.0-20240120021923-101384bb3acd
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/redis/go-redis/v9 v9.5.3
 	github.com/sethvargo/go-limiter v1.0.0

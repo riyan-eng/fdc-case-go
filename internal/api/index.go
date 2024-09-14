@@ -5,7 +5,5 @@ import (
 )
 
 func (m *ServiceServer) Index(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "Welcome to my channel",
-	})
+	c.JSON(200, "see api documentation on http://localhost:3001/docs and try api on http://localhost:3001/explore/index.html")
 }

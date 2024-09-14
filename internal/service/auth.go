@@ -2,18 +2,23 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"server/config"
 	"server/internal/datastruct"
 	"server/internal/entity"
+	"server/internal/model"
 	"server/internal/repository"
 	"server/util"
+
+	"github.com/google/uuid"
 )
 
 type AuthService interface {
-	Login(ctx *context.Context, ent *entity.ServAuthLogin) (*datastruct.AuthLoginData, *datastruct.AuthToken, *util.Error)
-	Refresh(ctx *context.Context, ent *entity.ServAuthRefresh) (*datastruct.AuthToken, *util.Error)
-	Me(ctx *context.Context, ent *entity.ServAuthMe) (*datastruct.AuthMe, *util.Error)
-	Logout(ctx *context.Context, ent *entity.ServAuthLogout) *util.Error
+	Register(ctx *context.Context, ent *entity.AuthRegister) *util.Error
+	Login(ctx *context.Context, ent *entity.AuthLogin) (*datastruct.AuthLoginData, *datastruct.AuthToken, *util.Error)
+	Refresh(ctx *context.Context, ent *entity.AuthRefresh) (*datastruct.AuthToken, *util.Error)
+	Me(ctx *context.Context, ent *entity.AuthMe) (*datastruct.AuthMe, *util.Error)
+	Logout(ctx *context.Context, ent *entity.AuthLogout) *util.Error
 }
 
 type authService struct {
@@ -26,7 +31,35 @@ func NewAuthService(dao *repository.DAO) AuthService {
 	}
 }
 
-func (m *authService) Login(ctx *context.Context, ent *entity.ServAuthLogin) (*datastruct.AuthLoginData, *datastruct.AuthToken, *util.Error) {
+func (m *authService) Register(ctx *context.Context, ent *entity.AuthRegister) *util.Error {
+	hashPassword, errT := util.GenerateHash(ent.Password)
+	if errT != nil {
+		return &util.Error{
+			Errors: errT.Error(),
+		}
+	}
+
+	modelUser := model.User{
+		Id:       *ent.UserId,
+		Username: sql.NullString{String: *ent.UserName, Valid: util.NewIsValid().String(ent.UserName)},
+		Password: sql.NullString{String: hashPassword, Valid: true},
+		IsActive: sql.NullBool{Bool: true, Valid: true},
+	}
+
+	modelUserData := model.UserData{
+		Id:       uuid.NewString(),
+		UserId:   sql.NullString{String: modelUser.Id, Valid: true},
+		RoleCode: sql.NullString{String: *ent.RoleCode, Valid: true},
+	}
+	if err := m.dao.NewAuthRepository().Register(ctx, &modelUser, &modelUserData); err.Errors != nil {
+		// custom err
+		return err
+	}
+
+	return &util.Error{}
+}
+
+func (m *authService) Login(ctx *context.Context, ent *entity.AuthLogin) (*datastruct.AuthLoginData, *datastruct.AuthToken, *util.Error) {
 	token := new(datastruct.AuthToken)
 
 	data, err := m.dao.NewAuthRepository().Login(ctx, ent.Username)
@@ -73,7 +106,7 @@ func (m *authService) Login(ctx *context.Context, ent *entity.ServAuthLogin) (*d
 	}, &util.Error{}
 }
 
-func (m *authService) Refresh(ctx *context.Context, ent *entity.ServAuthRefresh) (*datastruct.AuthToken, *util.Error) {
+func (m *authService) Refresh(ctx *context.Context, ent *entity.AuthRefresh) (*datastruct.AuthToken, *util.Error) {
 	newRefresh := new(datastruct.AuthToken)
 	claim, errT := util.NewToken().ParseRefresh(ent.Token)
 	if errT != nil {
@@ -111,7 +144,7 @@ func (m *authService) Refresh(ctx *context.Context, ent *entity.ServAuthRefresh)
 	}, &util.Error{}
 }
 
-func (m *authService) Logout(ctx *context.Context, ent *entity.ServAuthLogout) *util.Error {
+func (m *authService) Logout(ctx *context.Context, ent *entity.AuthLogout) *util.Error {
 	err := m.dao.NewAuthRepository().Logout(ctx, ent.UserId)
 	if err.Errors != nil {
 		return err
@@ -120,7 +153,7 @@ func (m *authService) Logout(ctx *context.Context, ent *entity.ServAuthLogout) *
 	return &util.Error{}
 }
 
-func (m *authService) Me(ctx *context.Context, ent *entity.ServAuthMe) (*datastruct.AuthMe, *util.Error) {
+func (m *authService) Me(ctx *context.Context, ent *entity.AuthMe) (*datastruct.AuthMe, *util.Error) {
 	data, err := m.dao.NewAuthRepository().Me(ctx, ent.UserId)
 	if err.Errors != nil {
 		return data, err

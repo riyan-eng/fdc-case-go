@@ -16,13 +16,11 @@ type routeStruct struct {
 func NewRouter(app *gin.Engine, dao *repository.DAO) *routeStruct {
 	exampleService := service.NewExampleService(dao)
 	authService := service.NewAuthService(dao)
-	perangkatService := service.NewPerangkatService(dao)
 	objectService := service.NewObjectService(dao)
 	handler := api.NewService(
 		*dao,
 		exampleService,
 		authService,
-		perangkatService,
 		objectService,
 	)
 	return &routeStruct{

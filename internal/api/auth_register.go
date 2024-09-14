@@ -8,19 +8,20 @@ import (
 	"server/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-// @Summary     Login
+// @Summary     Register
 // @Tags       	Authentication
 // @Accept		json
 // @Produce		json
-// @Param       body	body  dto.AuthLogin	true  "body"
+// @Param       body	body  dto.AuthRegister	true  "body"
 // @Success      200  {object}  util.SuccessResponse
 // @Failure      400  {object}  util.ErrorResponse
-// @Router		/auth/login [post]
-func (m *ServiceServer) AuthLogin(c *gin.Context) {
+// @Router		/auth/register [post]
+func (m *ServiceServer) AuthRegister(c *gin.Context) {
 	ctx := context.Background()
-	payload := new(dto.AuthLogin)
+	payload := new(dto.AuthRegister)
 
 	if err := c.Bind(payload); err != nil {
 		util.NewResponse(c).Error(err.Error(), "", 400)
@@ -32,9 +33,15 @@ func (m *ServiceServer) AuthLogin(c *gin.Context) {
 		util.NewResponse(c).Error(errors, infrastructure.Localize("FAILED_VALIDATION"), 400)
 		return
 	}
-	user, token, err := m.authService.Login(&ctx, &entity.AuthLogin{
-		Username: &payload.Username,
+
+	id := uuid.NewString()
+	roleCode := "STAF"
+	err := m.authService.Register(&ctx, &entity.AuthRegister{
+		UserId:   &id,
+		UserName: &payload.Username,
 		Password: &payload.Password,
+		Email:    &payload.Email,
+		RoleCode: &roleCode,
 	})
 
 	if err.Errors != nil {
@@ -43,14 +50,10 @@ func (m *ServiceServer) AuthLogin(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"access_token":    token.AccessToken,
-		"access_expired":  token.AccessExpired.Time.Local(),
-		"refresh_token":   token.RefreshToken,
-		"refresh_expired": token.RefreshExpired.Time.Local(),
-		"user": map[string]any{
-			"username":  user.Username,
-			"role_name": user.RoleName,
-		},
+		"id":       id,
+		"username": payload.Username,
+		"email":    payload.Email,
 	}
+
 	util.NewResponse(c).Success(data, nil, infrastructure.Localize("OK_READ"))
 }

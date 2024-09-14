@@ -15,8 +15,9 @@ import (
 // @Accept		json
 // @Produce		json
 // @Param       id	path	string	true	"id"
-// @Router      /object/{id}/ [delete]
-// @Security ApiKeyAuth
+// @Router      /object/{id} [delete]
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
 func (m *ServiceServer) ObjectRemove(c *gin.Context) {
 	ctx := context.Background()
 	id := c.Param("id")

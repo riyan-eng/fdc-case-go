@@ -16,8 +16,9 @@ import (
 // @Accept		json
 // @Produce		json
 // @Param       body	body  dto.ExampleCreate	true  "body"
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
 // @Router		/example [post]
-// @Security ApiKeyAuth
 func (m *ServiceServer) ExampleCreate(c *gin.Context) {
 	ctx := context.Background()
 	payload := new(dto.ExampleCreate)

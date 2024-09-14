@@ -2,27 +2,54 @@ definitions:
   dto.AuthLogin:
     properties:
       password:
+        format: password
         type: string
       username:
         type: string
+    required:
+    - password
+    - username
     type: object
   dto.AuthRefresh:
     properties:
       token:
         type: string
+    required:
+    - token
+    type: object
+  dto.AuthRegister:
+    properties:
+      email:
+        format: email
+        type: string
+      password:
+        format: password
+        minLength: 8
+        type: string
+      username:
+        minLength: 5
+        type: string
+    required:
+    - email
+    - password
+    - username
     type: object
   dto.ExampleCreate:
     properties:
       detail:
         type: string
       name:
+        minLength: 3
         type: string
+    required:
+    - name
     type: object
   dto.ExamplePatch:
     properties:
       detail:
         type: string
       name:
+        minLength: 3
         type: string
     type: object
   dto.ExamplePut:
@@ -30,55 +57,66 @@ definitions:
       detail:
         type: string
       name:
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  util.ErrorResponse:
+    properties:
+      errors: {}
+      message:
+        example: Failed to display data.
+        type: string
+      response:
+        $ref: '#/definitions/util.ErrorResponseChild'
+    type: object
+  util.ErrorResponseChild:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: Bad Request
+        type: string
+      request_id:
+        example: 8d0dc325-9fa4-430a-a46f-2042140c81ff
         type: string
     type: object
-  dto.PerangkatCreate:
+  util.SuccessResponse:
     properties:
-      alamat:
+      data: {}
+      message:
+        example: Successfully display data.
         type: string
-      jabatan_code:
-        type: string
-      photo_url:
-        type: string
-      tanggal_lahir:
-        type: string
-      tempat_lahir:
-        type: string
-      username:
-        type: string
+      meta: {}
+      response:
+        $ref: '#/definitions/util.SuccessResponseChild'
     type: object
-  dto.PerangkatPatch:
+  util.SuccessResponseChild:
     properties:
-      alamat:
+      code:
+        example: 200
+        type: integer
+      message:
+        example: OK
         type: string
-      jabatan_code:
-        type: string
-      photo_url:
-        type: string
-      tanggal_lahir:
-        type: string
-      tempat_lahir:
-        type: string
-      username:
-        type: string
-    type: object
-  dto.PerangkatResetPassword:
-    properties:
-      password:
+      request_id:
+        example: 8d0dc325-9fa4-430a-a46f-2042140c81ff
         type: string
     type: object
 info:
   contact:
     name: hertz-contrib
     url: https://github.com/hertz-contrib
-  description: This is a Sisalak Api Documentation.
+  description: This is a FDC Api Documentation.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Sisalak
+  title: FDC
   version: "1.0"
 paths:
-  /auth/login/:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -91,35 +129,59 @@ paths:
           $ref: '#/definitions/dto.AuthLogin'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Login
       tags:
       - Authentication
-  /auth/logout/:
+  /auth/logout:
     delete:
       consumes:
       - application/json
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Logout
       tags:
       - Authentication
-  /auth/me/:
+  /auth/me:
     get:
       consumes:
       - application/json
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Me
       tags:
       - Authentication
-  /auth/refresh/:
+  /auth/refresh:
     post:
       consumes:
       - application/json
@@ -132,18 +194,46 @@ paths:
           $ref: '#/definitions/dto.AuthRefresh'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Refresh
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthRegister'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Register
       tags:
       - Authentication
   /example:
     get:
       parameters:
-      - default: desc
-        description: desc/asc default(desc)
-        in: query
-        name: order
-        type: string
       - description: search
         in: query
         name: search
@@ -158,9 +248,15 @@ paths:
         type: integer
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: List
       tags:
       - Example
@@ -176,9 +272,15 @@ paths:
           $ref: '#/definitions/dto.ExampleCreate'
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Create
       tags:
       - Example
@@ -194,9 +296,15 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Delete
       tags:
       - Example
@@ -211,9 +319,15 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Detail
       tags:
       - Example
@@ -234,9 +348,15 @@ paths:
           $ref: '#/definitions/dto.ExamplePatch'
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Patch
       tags:
       - Example
@@ -257,13 +377,19 @@ paths:
           $ref: '#/definitions/dto.ExamplePut'
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Put
       tags:
       - Example
-  /object/:
+  /object:
     post:
       parameters:
       - description: File
@@ -271,13 +397,19 @@ paths:
         name: file
         required: true
         type: file
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Upload
       tags:
       - Object
-  /object/{id}/:
+  /object/{id}:
     delete:
       consumes:
       - application/json
@@ -289,9 +421,15 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Remove
       tags:
       - Object
@@ -312,141 +450,21 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
       summary: View
       tags:
       - Object
-  /perangkat/:
-    get:
-      parameters:
-      - description: search
-        in: query
-        name: search
-        type: string
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: per_page
-        in: query
-        name: per_page
-        type: integer
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
-      summary: List
-      tags:
-      - Perangkat
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.PerangkatCreate'
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Create
-      tags:
-      - Perangkat
-  /perangkat/{id}/:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Delete
-      tags:
-      - Perangkat
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Detail
-      tags:
-      - Perangkat
-    patch:
-      consumes:
-      - application/json
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.PerangkatPatch'
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Patch
-      tags:
-      - Perangkat
-  /perangkat/{id}/reset-password/:
-    patch:
-      consumes:
-      - application/json
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.PerangkatResetPassword'
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Reset Password
-      tags:
-      - Perangkat
-schemes:
-- https
-- http
 securityDefinitions:
-  ApiKeyAuth:
-    description: Bearer access token here
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
     in: header
     name: Authorization
     type: apiKey

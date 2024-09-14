@@ -16,8 +16,9 @@ import (
 // @Produce		json
 // @Param       id	path	string	true	"id"
 // @Param       body	body  dto.ExamplePatch	true  "body"
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
 // @Router		/example/{id} [patch]
-// @Security ApiKeyAuth
 func (m *ServiceServer) ExamplePatch(c *gin.Context) {
 	ctx := context.Background()
 	id := c.Param("id")

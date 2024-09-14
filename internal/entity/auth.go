@@ -1,6 +1,6 @@
 package entity
 
-type ServAuthRegister struct {
+type AuthRegister struct {
 	UserId   *string
 	Email    *string
 	UserName *string
@@ -8,32 +8,32 @@ type ServAuthRegister struct {
 	RoleCode *string
 }
 
-type ServAuthLogin struct {
+type AuthLogin struct {
 	Username *string
 	Password *string
 }
 
-type ServAuthRefresh struct {
+type AuthRefresh struct {
 	Token *string
 }
 
-type ServAuthResetPassword struct {
+type AuthResetPassword struct {
 	Token    *string
 	Password *string
 }
 
-type ServAuthResetPasswordToken struct {
+type AuthResetPasswordToken struct {
 	Email *string
 }
 
-type ServAuthResetPasswordTokenValidate struct {
+type AuthResetPasswordTokenValidate struct {
 	Token *string
 }
 
-type ServAuthLogout struct {
+type AuthLogout struct {
 	UserId *string
 }
 
-type ServAuthMe struct {
+type AuthMe struct {
 	UserId *string
 }

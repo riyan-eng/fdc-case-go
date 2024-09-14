@@ -12,12 +12,12 @@ import (
 // @Summary      List
 // @Tags       	 Example
 // @Produce      json
-// @Param        order		query   string	false  "desc/asc default(desc)"
 // @Param        search		query   string	false  "search"
 // @Param        page		query   int		false  "page"
 // @Param        per_page	query   int		false  "per_page"
+// @Success      200  {object}  util.SuccessResponse
+// @Failure      400  {object}  util.ErrorResponse
 // @Router       /example [get]
-// @Security ApiKeyAuth
 func (m *ServiceServer) ExampleList(c *gin.Context) {
 	ctx := context.Background()
 	queryParam := new(dto.PaginationReq).Init()

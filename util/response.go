@@ -15,24 +15,24 @@ type PaginationMeta struct {
 }
 
 type SuccessResponse struct {
-	Data     interface{} `json:"data"`
-	Message  string      `json:"message"`
-	Meta     interface{} `json:"meta,omitempty"`
-	Response Response    `json:"response"`
+	Data     interface{}          `json:"data"`
+	Message  string               `json:"message" example:"Successfully display data."`
+	Meta     interface{}          `json:"meta,omitempty"`
+	Response SuccessResponseChild `json:"response"`
 }
 
 type ErrorResponse struct {
-	Error    any      `json:"errors"`
-	Message  string   `json:"message"`
-	Response Response `json:"response"`
+	Error    any                `json:"errors"`
+	Message  string             `json:"message" example:"Failed to display data."`
+	Response ErrorResponseChild `json:"response"`
 }
 
 type ImportResponse struct {
-	Errors     []ImportError `json:"errors"`
-	TotalInput int           `json:"total_input"`
-	Success    int           `json:"success"`
-	Failed     int           `json:"failed"`
-	Response   Response      `json:"response"`
+	Errors     []ImportError        `json:"errors"`
+	TotalInput int                  `json:"total_input"`
+	Success    int                  `json:"success"`
+	Failed     int                  `json:"failed"`
+	Response   SuccessResponseChild `json:"response"`
 }
 
 type ImportError struct {
@@ -40,10 +40,16 @@ type ImportError struct {
 	Errors any `json:"error"`
 }
 
-type Response struct {
-	RequestId string `json:"request_id"`
-	Code      int    `json:"code"`
-	Message   string `json:"message"`
+type SuccessResponseChild struct {
+	RequestId string `json:"request_id" example:"8d0dc325-9fa4-430a-a46f-2042140c81ff"`
+	Code      int    `json:"code" example:"200"`
+	Message   string `json:"message" example:"OK"`
+}
+
+type ErrorResponseChild struct {
+	RequestId string `json:"request_id" example:"8d0dc325-9fa4-430a-a46f-2042140c81ff"`
+	Code      int    `json:"code" example:"400"`
+	Message   string `json:"message" example:"Bad Request"`
 }
 
 type repsonseInterface interface {
@@ -73,7 +79,7 @@ func (m *responseStruct) Success(data any, meta any, message string, statusCode 
 		Data:    data,
 		Meta:    meta,
 		Message: message,
-		Response: Response{
+		Response: SuccessResponseChild{
 			RequestId: requestId,
 			Code:      code,
 			Message:   statusMessages[code],
@@ -97,7 +103,7 @@ func (m *responseStruct) Error(errors any, message string, statusCode ...int) {
 	m.c.AbortWithStatusJSON(code, ErrorResponse{
 		Error:   errors,
 		Message: message,
-		Response: Response{
+		Response: ErrorResponseChild{
 			RequestId: requestId,
 			Code:      code,
 			Message:   statusMessages[code],
@@ -113,7 +119,7 @@ func (m *responseStruct) Import(errors []ImportError, totalInput int, failed int
 		TotalInput: totalInput,
 		Success:    totalInput - failed,
 		Failed:     failed,
-		Response: Response{
+		Response: SuccessResponseChild{
 			RequestId: requestId,
 			Code:      code,
 			Message:   statusMessages[code],

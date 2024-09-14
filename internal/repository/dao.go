@@ -11,7 +11,6 @@ import (
 type DAO interface {
 	NewExampleRepository() ExampleRepository
 	NewAuthRepository() AuthRepository
-	NewPerangkatRepository() PerangkatRepository
 	NewObjectRepository() ObjectRepository
 }
 
@@ -43,13 +42,6 @@ func (m *dao) NewAuthRepository() AuthRepository {
 		sqlDB:  m.SqlDB,
 		sqlxDB: m.SqlxDB,
 		cache:  m.Cache,
-	}
-}
-
-func (m *dao) NewPerangkatRepository() PerangkatRepository {
-	return &perangkatRepository{
-		sqlDB:  m.SqlDB,
-		sqlxDB: m.SqlxDB,
 	}
 }
 

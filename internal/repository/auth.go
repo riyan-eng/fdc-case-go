@@ -4,8 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"server/infrastructure"
 	"server/internal/datastruct"
+	"server/internal/model"
 	"server/util"
+	"strings"
 
 	"github.com/blockloop/scan/v2"
 	"github.com/jmoiron/sqlx"
@@ -13,6 +16,7 @@ import (
 )
 
 type AuthRepository interface {
+	Register(ctx *context.Context, modelUser *model.User, modelUserData *model.UserData) *util.Error
 	Login(ctx *context.Context, username *string) (*datastruct.AuthLoginData, *util.Error)
 	Logout(ctx *context.Context, userId *string) *util.Error
 	Me(ctx *context.Context, userId *string) (*datastruct.AuthMe, *util.Error)
@@ -24,16 +28,53 @@ type authRepository struct {
 	cache  *redis.Client
 }
 
+func (m *authRepository) Register(ctx *context.Context, modelUser *model.User, modelUserData *model.UserData) *util.Error {
+	tx := m.sqlxDB.MustBegin()
+	_, errT := tx.NamedExecContext(*ctx, `
+	insert into users (uuid, username, password, is_active) values (:id, :username, :password, true)
+	`, modelUser)
+	if errT != nil {
+		if strings.Contains(errT.Error(), `duplicate key value violates unique constraint`) {
+			return &util.Error{
+				Errors:     "duplicate",
+				Message:    "username telah digunakan.",
+				StatusCode: 409,
+			}
+		}
+
+		return &util.Error{
+			Errors:  errT.Error(),
+			Message: infrastructure.Localize("FAILED_CREATE_NO_DATA"),
+		}
+	}
+	_, errT = tx.NamedExecContext(*ctx, `
+	insert into user_datas (uuid, user_uuid, role_code) values (:id, :user_id, :role_code)
+	`, modelUserData)
+
+	if errT != nil {
+		return &util.Error{
+			Errors:  errT.Error(),
+			Message: infrastructure.Localize("FAILED_CREATE_NO_DATA"),
+		}
+	}
+	if errT := tx.Commit(); errT != nil {
+		return &util.Error{
+			Errors:  errT.Error(),
+			Message: infrastructure.Localize("FAILED_CREATE_NO_DATA"),
+		}
+	}
+	return &util.Error{}
+}
+
 func (m *authRepository) Login(ctx *context.Context, username *string) (*datastruct.AuthLoginData, *util.Error) {
 	data := new(datastruct.AuthLoginData)
 
 	query := fmt.Sprintf(`
-	select u."uuid", u.username, u."password", u.is_active, j.name as jabatan_name, r.code as role_code, r."name" as role_name 
+	select u."uuid", u.username, u."password", u.is_active, r.code as role_code, r."name" as role_name 
 	from users u 
 	left join user_datas ud on ud.user_uuid = u."uuid" 
 	left join roles r on r.code = ud.role_code  
-	left join jabatan j on ud.jabatan_code = j.code 
-	where u.username = '%v' and u.is_delete = false
+	where u.username = '%v'
 	limit 1
 	`, *username)
 
@@ -68,11 +109,10 @@ func (m *authRepository) Me(ctx *context.Context, userId *string) (*datastruct.A
 	data := new(datastruct.AuthMe)
 
 	query := fmt.Sprintf(`
-	select u."uuid", u.username, r.code as role_code, r."name" as role_name, ud.jabatan_code, j.name as jabatan_name, u.birth_place, u.birth_date::text, u.address, u.photo_url 
+	select u."uuid", u.username, r.code as role_code, r."name" as role_name
 	from users u 
 	left join user_datas ud on ud.user_uuid = u.uuid 
-	left join roles r on r.code = ud.role_code  
-	left join jabatan j on ud.jabatan_code = j.code 
+	left join roles r on r.code = ud.role_code 
 	where u.uuid = '%v' 
 	limit 1
 	`, *userId)
